@@ -37,6 +37,7 @@
 #include "artery-font-export.h"
 #include "csv-export.h"
 #include "json-export.h"
+#include "fnt-export.h"
 #include "shadron-preview-generator.h"
 
 #define MSDF_ATLAS_VERSION "1.2"

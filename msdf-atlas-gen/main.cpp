@@ -214,6 +214,7 @@ struct Configuration {
     const char *arteryFontFilename;
     const char *imageFilename;
     const char *jsonFilename;
+    const char *fntFilename;
     const char *csvFilename;
     const char *shadronPreviewFilename;
     const char *shadronPreviewText;
@@ -397,6 +398,11 @@ int main(int argc, const char * const *argv) {
         }
         ARG_CASE("-json", 1) {
             config.jsonFilename = argv[++argPos];
+            ++argPos;
+            continue;
+        }
+        ARG_CASE("-fnt", 1) {
+            config.fntFilename = argv[++argPos];
             ++argPos;
             continue;
         }
@@ -687,7 +693,7 @@ int main(int argc, const char * const *argv) {
         rangeMode = RANGE_PIXEL;
         rangeValue = DEFAULT_PIXEL_RANGE;
     }
-    if (config.kerning && !(config.arteryFontFilename || config.jsonFilename || config.shadronPreviewFilename))
+    if (config.kerning && !(config.arteryFontFilename || config.jsonFilename || config.shadronPreviewFilename || config.fntFilename))
         config.kerning = false;
     if (config.threadCount <= 0)
         config.threadCount = std::max((int) std::thread::hardware_concurrency(), 1);
@@ -975,6 +981,14 @@ int main(int argc, const char * const *argv) {
             puts("Failed to write JSON output file.");
         }
     }
+    if (config.fntFilename) {
+		if (!!config.imageFilename && exportFNT(fonts.data(), fonts.size(), config.emSize, config.pxRange, config.width, config.height, config.imageType, config.fntFilename, config.imageFilename))
+			puts("Glyph layout and metadata written into FNT file.");
+        else {
+            result = 1;
+            puts("Failed to write FNT output file.");
+        }
+    }	
 
     if (config.shadronPreviewFilename && config.shadronPreviewText) {
         if (anyCodepointsAvailable) {

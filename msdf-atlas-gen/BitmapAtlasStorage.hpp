@@ -46,10 +46,10 @@ BitmapAtlasStorage<T, N>::operator msdfgen::BitmapRef<T, N>() {
     return bitmap;
 }
 
-template <typename T, int N>
-BitmapAtlasStorage<T, N>::operator msdfgen::Bitmap<T, N>() && {
-    return (msdfgen::Bitmap<T, N> &&) bitmap;
-}
+// template <typename T, int N>
+// BitmapAtlasStorage<T, N>::operator msdfgen::Bitmap<T, N>() && {
+//     return (msdfgen::Bitmap<T, N>() &&) bitmap;
+// }
 
 template <typename T, int N>
 template <typename S>
