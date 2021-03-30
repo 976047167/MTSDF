@@ -44,7 +44,7 @@ bool exportFNT(const FontGeometry *fonts, int fontCount, double fontSize, double
 	for (const GlyphGeometry &glyph : font.getGlyphs()) {
 		int x, y, w, h;
         glyph.getBoxRect(x, y, w, h);
-		ss <<"char id="<< glyph.getCodepoint() <<"   x="<<x <<"  y="<<y <<"     width=" << w<<"     height="<< h <<"    xoffset=0   yoffset=0    xadvance=" << int(glyph.getAdvance()/font.getGeometryScale()) << "    page=0  chnl=1"<< std::endl;
+		ss <<"char id="<< glyph.getCodepoint() <<"   x="<<x <<"  y="<<atlasHeight - y <<"     width=" << w<<"     height="<< h <<"    xoffset=0   yoffset=0    xadvance=" << int(glyph.getAdvance()/font.getGeometryScale()) << "    page=0  chnl=1"<< std::endl;
 	}
 	int kerningCount =font.getKerning().size();
 	if(kerningCount >0){
