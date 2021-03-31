@@ -1,0 +1,97 @@
+// Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.  
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs
+      frag: fs
+      blendState:
+        targets:
+        - blend: true
+      rasterizerState:
+        cullMode: none
+      properties:
+        texture: { value: white }
+        outlineSize: {value: 0.0}
+        outlineColor: {value: [1,1,1,1]}
+        unitWidth: {value: 0.002}
+        unitHeight: {value: 0.002}
+}%
+
+
+CCProgram vs %{
+  precision highp float;
+
+  #include <cc-global>
+  #include <cc-local>
+  in vec3 a_position;
+  in vec4 a_color;
+  out vec4 v_color;
+  in vec2 a_uv0;
+  out vec2 v_uv0;
+
+  void main () {
+    vec4 pos = vec4(a_position, 1);
+    pos = cc_matViewProj * pos;
+    v_uv0 = a_uv0;
+    v_color = a_color;
+    gl_Position = pos;
+  }
+}%
+
+
+CCProgram fs %{
+#extension GL_OES_standard_derivatives : enable
+  precision highp float;
+  
+  in vec4 v_color;
+
+  in vec2 v_uv0;
+  uniform sampler2D texture;
+  uniform ubo1 {
+	float unitHeight;
+	float unitWidth;
+    float outlineSize;
+  };
+  uniform ubo2 {
+    vec4 outlineColor;
+  };
+	float median(float r, float g, float b) {
+		return max(min(r, g), min(max(r, g), b));
+	}
+	float screenPxRange() {
+		vec2 unitRange = vec2(unitWidth,unitHeight);
+
+		vec2 screenTexSize = vec2( abs(1.0/dFdx(v_uv0.x)),abs(1.0/dFdy(v_uv0.y)));
+		// vec2 screenTexSize = vec2( 1.0)/fwidth(v_uv0);
+
+		return max(0.5*dot(unitRange, screenTexSize), 1.0);
+	}
+
+	void main () {
+		vec4 msd = texture(texture, v_uv0);
+		float sd = median(msd.r,msd.g,msd.b);
+		float  screenPxr = screenPxRange(); 
+		float bgScreenPxDistance = screenPxr* (sd-0.5 );
+		float opacity = clamp( 0.0, 1.0,bgScreenPxDistance +0.5);
+		float fgScreenPxDistance = screenPxr* (sd-0.5 + outlineSize);
+		float fopacity = clamp( 0.0, 1.0,fgScreenPxDistance +0.5);
+
+		float ft = smoothstep(0.0,1.0,fopacity - opacity);
+		float bg = screenPxr* clamp(0.0,1.0,msd.a - 0.5 +outlineSize);
+		float at = min(bg,fopacity);
+		vec4 color = vec4(v_color.rgb,v_color.a * opacity);
+		vec4 fgColor = outlineColor * ft + v_color *(1.0 - ft);
+		gl_FragColor =vec4(fgColor.rgb, fgColor.a * at);;
+
+
+    // float outEdge = EDGE_VALUE - outlineSize;
+    // float bg = smoothstep(outEdge - smoothing, outEdge, dist);
+    // float fg = smoothstep(EDGE_VALUE - smoothing, EDGE_VALUE, dist);
+    // vec4 fgColor = outlineColor * (1.0 - fg) + v_color * fg;
+    // gl_FragColor = vec4(fgColor.rgb, fgColor.a * bg);
+
+	}
+
+
+}%
